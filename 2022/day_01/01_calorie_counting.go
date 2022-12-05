@@ -41,6 +41,7 @@ func getMaxCalories(data *csv.Reader) []Elf {
 		rec, err := data.Read()
 		// deals with errors
 		if err == io.EOF {
+			elfs = append(elfs, Elf{curr_elf_id, curr_elf_calories})
 			break
 		}
 		if err != nil {
@@ -79,6 +80,9 @@ func main() {
 	flag.Parse()
 
 	elfs := solveProblem(*inputArgPtr)
+	for i, v := range elfs {
+		fmt.Printf("The %dth Elf carries %d Calories.\n", i, v)
+	}
 	top_k := *topKArgPtr
 	// sorts a slice of Elf in decreasing order of their MaxCalories
 	sort.Slice(elfs, func(i, j int) bool {
