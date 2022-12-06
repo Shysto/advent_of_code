@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const rangeDelimiter = "-"
+const rangeDelimiter string = "-"
 
 func solveProblem(filePath string, solvePart1 bool) int {
 	f, err := os.Open(filePath)

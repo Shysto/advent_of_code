@@ -3,6 +3,10 @@
 # Ignore all
 *
 
-# Unignore all with extensions
+# Unignore folders
+!*/
+
+# Unignore the following extensions
 !*.csv
+!*.txt
 !*.go
