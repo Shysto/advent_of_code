@@ -12,11 +12,13 @@ import (
 )
 
 const noteLength int = 7
-const divideWorryLevelBy int = 3
-const nbRounds int = 20
 const topActiveMonkeys int = 2
 const add string = "+"
 const mult string = "*"
+
+var divideWorryLevelBy int
+var nbRounds int
+var limit int = 1
 
 type Queue []int
 
@@ -45,7 +47,7 @@ func (q *Queue) pop() (int, bool) {
 type Monkey struct {
 	Id               int
 	Items            Queue
-	Operation        func(*Queue)
+	Operation        func(*Queue, int)
 	DivisibilityTest func(int) bool
 	TrueMonkeyId     int
 	FalseMonkeyId    int
@@ -109,25 +111,34 @@ func parseNotes(scanner *bufio.Scanner, solvePart1 bool) {
 			//fmt.Println(note)
 			if strings.Contains(note, add) {
 				factor, _ := strconv.Atoi(strings.TrimSpace(strings.Split(note, add)[1]))
-				monkey.Operation = func(q *Queue) {
+				monkey.Operation = func(q *Queue, l int) {
 					for i := 0; i < len(*q); i++ {
 						(*q)[i] += factor
+						if l > 1 {
+							(*q)[i] %= l
+						}
 					}
 				}
 			} else if strings.Contains(note, mult) {
 				factor_str := strings.TrimSpace(strings.Split(note, mult)[1])
 				if factor_str == "old" {
-					monkey.Operation = func(q *Queue) {
+					monkey.Operation = func(q *Queue, l int) {
 						for i := 0; i < len(*q); i++ {
 							(*q)[i] *= (*q)[i]
+							if l > 1 {
+								(*q)[i] %= l
+							}
 						}
 					}
 				} else {
 					factor, _ := strconv.Atoi(factor_str)
 
-					monkey.Operation = func(q *Queue) {
+					monkey.Operation = func(q *Queue, l int) {
 						for i := 0; i < len(*q); i++ {
 							(*q)[i] *= factor
+							if l > 1 {
+								(*q)[i] %= l
+							}
 						}
 					}
 				}
@@ -140,6 +151,10 @@ func parseNotes(scanner *bufio.Scanner, solvePart1 bool) {
 		} else if i%noteLength == 4 {
 			//fmt.Println(note)
 			divisibilityFactor, _ := strconv.Atoi(strings.TrimSpace(strings.Split(note, "by")[1]))
+			if !solvePart1 {
+				limit *= divisibilityFactor
+			}
+
 			monkey.DivisibilityTest = func(worryLevel int) bool {
 				return worryLevel%divisibilityFactor == 0
 			}
@@ -170,7 +185,7 @@ func runRounds() []int {
 			//fmt.Printf("Monkey %d:\n", monkeys[m].Id)
 			//cpy := make([]int, len(monkeys[m].Items))
 			//copy(cpy, monkeys[m].Items)
-			monkeys[m].Operation(&monkeys[m].Items)
+			monkeys[m].Operation(&monkeys[m].Items, limit)
 			k := 0
 			for !monkeys[m].Items.isEmpty() {
 				nbInspections[m]++
@@ -207,6 +222,14 @@ func main() {
 	boolArgPtr := flag.Bool("solvePart1", false, "Whether to get the solution for Part 1 or for Part 2.")
 	// Parse command line into the defined flags
 	flag.Parse()
+
+	if *boolArgPtr {
+		divideWorryLevelBy = 3
+		nbRounds = 20
+	} else {
+		divideWorryLevelBy = 1
+		nbRounds = 10000
+	}
 
 	monkeyBusiness := solveProblem(*inputArgPtr, *boolArgPtr)
 
